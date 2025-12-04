@@ -33,21 +33,27 @@ def get_product_on_tree(product_id: int):
         raise HTTPException(status_code=404, detail="Not found")
     return product
 
-def load_products_from_json(path=PRODUCTS_PATH):
+def preload_products(db: Session, path=PRODUCTS_PATH):
     try:
-        if tree.root:
-            return tree
-
         with open(path, "r") as f:
             products = json.load(f)
-
-        for p in products:
-            tree.insert(p)
-
     except FileNotFoundError:
-        print("No products.json found, starting with an empty BST")
+        print("No products.json found.")
+        return
 
-    return tree
+    print("🔄 Preloading products...")
+
+    for p in products:
+        existing = db.query(Product).filter(Product.id == p["id"]).first()
+        if not existing:
+            obj = Product(**p)
+            db.add(obj)
+
+        tree.insert(p)
+
+    db.commit()
+    print("✅ Products loaded into DB and BST")
+
 
 
 def write_product_in_json(product_data: dict):

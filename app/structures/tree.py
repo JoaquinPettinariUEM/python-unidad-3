@@ -37,13 +37,13 @@ class Tree:
         else:
             return self.search_recursive(node.right, product_id)
 
-    def inorder(self):
+    def in_order(self):
         result = []
-        self.inorder_recursive(self.root, result)
+        self.in_order_recursive(self.root, result)
         return result
 
-    def inorder_recursive(self, node, result):
+    def in_order_recursive(self, node, result):
         if node:
-            self.inorder_recursive(node.left, result)
+            self.in_order_recursive(node.left, result)
             result.append(node.product)
-            self.inorder_recursive(node.right, result)
+            self.in_order_recursive(node.right, result)

@@ -1,12 +1,15 @@
 from pydantic import BaseModel
+from typing import Optional
 
-class OrderItemsBase(BaseModel):
-  order_id: int
-  product_id: int
-  quantity: int
+class OrderItemBase(BaseModel):
+    product_id: int
+    quantity: int
+    next_id: Optional[int] = None
 
-class OrderItemsResponse(OrderItemsBase):
-  pass
+class OrderItem(OrderItemBase):
+    id: int
 
-class OrderItems:
-  id: int
+    model_config = {"from_attributes": True}
+
+class OrderItemResponse(OrderItem):
+    pass

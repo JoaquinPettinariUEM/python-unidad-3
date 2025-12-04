@@ -20,23 +20,18 @@
         "price": 300
     },
     {
-        "id": 11,
-        "name": "Dulce de leche 2",
-        "price": 6
+        "id": 7,
+        "name": "Dulce de leche",
+        "price": 20
     },
     {
-        "id": 12,
-        "name": "Dulce de leche 2",
-        "price": 6
+        "id": 8,
+        "name": "Yerba",
+        "price": 10
     },
     {
-        "id": 13,
-        "name": "Dulce de leche 4",
-        "price": 6
-    },
-    {
-        "id": 14,
-        "name": "Dulce de leche 4",
-        "price": 6
+        "id": 9,
+        "name": "Carne",
+        "price": 25
     }
 ]
