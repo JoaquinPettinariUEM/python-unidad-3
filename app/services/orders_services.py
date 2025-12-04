@@ -1,48 +1,22 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
 from app.models.order_model import Order
 from app.models.order_item_model import OrderItem
 from app.schemas.order_schema import OrderCreate
+from app.dependencies.orders import map_order_to_response
 
-from typing import List, Dict, Any
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
-
-from app.models.order_model import Order
-from app.models.product_model import Product
-
-
-def get_order(db: Session, order_id: int) -> List[Dict[str, Any]]:
+def get_order(db: Session, order_id: int):
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    nodes = []
-    current = order.head
-    while current:
-        nodes.append(current)
-        current = current.next
-
-    if not nodes:
-        return []
-
-    product_ids = [node.product_id for node in nodes]
-    products = db.query(Product).filter(Product.id.in_(set(product_ids))).all()
-    product_map = {product.id: product for product in products}
-
-    result: List[Dict[str, Any]] = []
-    for node in nodes:
-        product = product_map.get(node.product_id)
-        if product:
-            result.append({"name": product.name, "price": product.price})
-        else:
-            result.append({"name": None, "price": None})
-
-    return result
-
+    return map_order_to_response(order, db)
 
 def get_all_orders(db: Session):
-    return db.query(Order).all()
+    orders = db.query(Order).all()
+    return [map_order_to_response(order, db) for order in orders]
+
 
 def create_order(db: Session, order_data: OrderCreate):
     order = Order()
