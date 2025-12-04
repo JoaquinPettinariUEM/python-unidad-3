@@ -2,8 +2,10 @@ from typing import Dict, Any
 from sqlalchemy.orm import Session
 
 from app.models.product_model import Product
+from app.models.order_item_model import OrderItem
+from app.models.order_model import Order
 
-def map_order_to_response(order, db: Session) -> Dict[str, Any]:
+def map_order_to_response(order: Order, db: Session) -> Dict[str, Any]:
     nodes = []
     current = order.head
     while current:
@@ -35,3 +37,28 @@ def map_order_to_response(order, db: Session) -> Dict[str, Any]:
         "order_id": order.id,
         "items": items
     }
+
+def build_linked_list(db: Session, order_id, items: list):
+    previous_node = None
+    head_node = None
+
+    for item in items:
+        node = OrderItem(
+            order_id=order_id,
+            product_id=item.product_id,
+            quantity=item.quantity,
+        )
+        db.add(node)
+        db.flush()
+
+        if head_node is None:
+            head_node = node
+        else:
+            if previous_node is not None:
+                previous_node.next_id = node.id
+            db.add(previous_node)
+
+        previous_node = node
+
+    return head_node.id if head_node else None
+

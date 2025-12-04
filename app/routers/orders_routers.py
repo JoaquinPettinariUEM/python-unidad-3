@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.services.orders_services import get_all_orders, get_order, create_order, delete_order
+from app.services.orders_services import get_all_orders, get_order, create_order, delete_order, update_order
 from app.schemas.order_schema import OrderCreate
 from app.dependencies.utils import get_db
 
@@ -18,6 +18,10 @@ def get_order_by_id(order_id: int, db: Session = Depends(get_db)):
 @router.post("/")
 def create_order_route(order: OrderCreate, db: Session = Depends(get_db)):
     return create_order(db, order)
+
+@router.put("/{order_id}")
+def update_order_router(order_id: int, order: OrderCreate, db: Session = Depends(get_db)):
+    return update_order(db, order_id, order.items)
 
 @router.delete("/{order_id}")
 def delete_order_route(order_id: int, db: Session = Depends(get_db)):
