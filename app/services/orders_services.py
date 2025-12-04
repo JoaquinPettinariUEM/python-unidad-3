@@ -51,3 +51,19 @@ def create_order(db: Session, order_data: OrderCreate):
     db.refresh(order)
 
     return order
+
+def delete_order(db: Session, order_id: int):
+    order = db.query(Order).filter(Order.id == order_id).first()
+
+    if not order:
+        raise HTTPException(404, "Not found order")
+
+    order_items = db.query(OrderItem).filter(OrderItem.order_id == order_id)
+
+    for order_item in order_items:
+        db.delete(order_item)
+        db.commit()
+
+    db.delete(order)
+    db.commit()
+    return order
