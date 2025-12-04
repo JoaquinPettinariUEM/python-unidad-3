@@ -1,9 +1,14 @@
+from pydantic import BaseModel
 
-class ProductBase:
+class ProductBase(BaseModel):
   name: str
-  brand: str
+  price: int
 
 class Product(ProductBase):
     id: int
 
-    model_config = { "from_attributes": True }
+    model_config = {"from_attributes": True}
+
+class ProductResponse(Product):
+   pass
+
