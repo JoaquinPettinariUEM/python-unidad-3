@@ -85,8 +85,8 @@ El punto de entrada es **main.py**, donde se inicializa la aplicación FastAPI y
 Cada ruta delega su lógica a un archivo dentro de **services/**, donde se implementan las operaciones principales:
 
 - Gestión del árbol binario (lectura, inserción, búsqueda)
-- POST, GETs de productos 
-- CRUD de órdenes enlazadas
+- CRUD de productos 
+- CRUD de órdenes
 - Conversión y mapeo de datos SQL → JSON → Pydantic → Response
 
 Los datos se validan y tipan utilizando los Schemas de Pydantic, ubicados en la carpeta **schemas/**.
@@ -178,6 +178,8 @@ while current:
 - **POST /products/** Crea un producto nuevo y lo inserta en:
   - La base de datos
   - El árbol binario
+- **PUT /products/{product_id}** Modifica el precio o nombre de un producto
+- **DELETE /products/{product_id}** Elimina un producto
 
 ### 📦 Órdenes (/orders)
 
