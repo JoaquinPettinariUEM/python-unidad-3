@@ -103,3 +103,101 @@ Esta estructura separa responsabilidades:
 - **Services** contienen la lógica de negocio
 - **Schemas** tipan y validan los datos
 - **Models** representan las tablas y la lógica relacional en la base de datos
+
+## 🌳 Árbol Binario de Productos
+
+Los productos se almacenan en un árbol binario de búsqueda.
+
+### 🔹 Inserción y búsqueda
+
+El árbol usa el id del producto como valor para ordenar nodos.
+Esto implica que, como los ids suelen ser crecientes, el árbol puede quedar sesgado hacia la derecha (no balanceado).
+
+### 🔹 Persistencia
+
+Manejamos un archivo JSON con productos.
+Al iniciar la aplicación se ejecuta el **preload_products** que toma unos datos mocks a través de un archivo JSON, los inserta en a base de datos y en un árbol nuevo.
+
+```python
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db = SessionLocal()
+    try:
+        preload_products(db)
+        yield
+    finally:
+        db.close()
+```
+
+Como esto está hecho por sesión, al reiniciar la aplicación el árbol se va a volver a crear.
+
+## 🧩 Lista Enlazada de Ordenes
+
+Las órdenes están implementadas con una lista enlazada simple, donde cada nodo representa un producto dentro de la orden.
+
+### 🔹 Modelos relacionados
+
+```python
+class Order(Base):
+    id = Column(Integer, primary_key=True)
+    head_id = Column(Integer, ForeignKey("order_items.id"), nullable=True)
+
+    head = relationship("OrderItem", foreign_keys=[head_id], post_update=True)
+```
+
+```python
+class OrderItem(Base):
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey("order.id"))
+    product_id = Column(Integer)
+    quantity = Column(Integer)
+
+    next_id = Column(Integer, ForeignKey("order_items.id"))
+    next = relationship("OrderItem", remote_side=[id], uselist=False)
+```
+
+🔹 Explicación de la estructura
+
+- **Order.head_id** apunta al primer OrderItem de la lista
+- Cada **OrderItem.next_id** apunta al siguiente nodo
+- De esa forma, SQLAlchemy reconstruye la lista enlazada automáticamente
+- La relación remote_side=[id] es importante porque indica que el modelo se relaciona consigo mismo
+
+Esto permite recorrer la orden así:
+```python
+current = order.head
+while current:
+    current = current.next
+```
+
+## 📚 Endpoints
+### 🛒 Productos (/products)
+
+- **GET /products/** Retorna todos los productos persistidos en la base.
+- **GET /products/{product_id}** Retorna un producto individual.
+- **POST /products/** Crea un producto nuevo y lo inserta en:
+  - La base de datos
+  - El árbol binario
+
+### 📦 Órdenes (/orders)
+
+Aquí es donde entra en juego la lista enlazada.
+
+- **GET /orders/** Retorna todas las órdenes.
+- **GET /orders/{order_id}** Recorre la lista enlazada desde el head y devuelve los productos con nombre y precio mapeados.
+- **POST /orders/** Crea una nueva orden, armando la lista enlazada desde cero:
+- **PUT /orders/{order_id}** Sobrescribe completamente los nodos de la orden.
+- **DELETE /orders/{order_id}** Elimina la orden completa, junto con todos los nodos asociados.
+
+
+## 🚧 Limitaciones y Posibles Mejoras
+
+- El BST no está balanceado → podría degenerar en lista
+- Las órdenes sobrescriben nodo por nodo, aunque funciona, podría optimizarse
+- No existen validaciones avanzadas (existencia de producto, cantidad > 0, etc.)
+- No hay manejo de transacciones en operaciones complejas
+- No hay tests automatizados (muy recomendado agregarlos)
+- El manejo de persistencia con un archivo JSON no es lo mejor.
+- Actualmente combina el guardado de productos de forma redundante, tanto en el archivo JSON como en la base. No es lo mas óptimo
+
+  
