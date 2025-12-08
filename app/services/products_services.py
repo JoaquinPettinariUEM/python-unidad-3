@@ -27,6 +27,37 @@ def create_product(db: Session, product: ProductBase):
 
   return db_product
 
+def update_product(db: Session, product_id: int, name: str | None = None, price: int | None = None):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    if name is not None:
+        product.name = name # type: ignore
+
+    if price is not None:
+        product.price = price # type: ignore
+
+    db.commit()
+    db.refresh(product)
+
+    tree.update(product_id, name=name, price=price)
+
+    return product
+
+def delete_product(db: Session, product_id):
+    product = db.query(Product).filter(Product.id == product_id).first()
+
+    if not product:
+        raise HTTPException(404, "Not found product")
+
+    db.delete(product)
+    db.commit()
+
+    tree.delete(product_id)
+
+    return product
+
 def get_product_on_tree(product_id: int):
     product = tree.search(product_id)
     if not product:

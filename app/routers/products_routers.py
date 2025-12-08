@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.schemas.product_schema import ProductBase, ProductResponse
 from app.dependencies.utils import get_db
-from app.services.products_services import get_products, create_product, get_product_on_tree
+from app.services.products_services import get_products, create_product, get_product_on_tree, update_product, delete_product
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -19,3 +19,19 @@ def get_product_by_id(product_id: int):
 def create_user_route(product: ProductBase, db: Session = Depends(get_db)):
     return create_product(db, product)
 
+@router.put("/{product_id}")
+def update_product_route(
+    product_id: int,
+    product: ProductBase,
+    db: Session = Depends(get_db)
+):
+    return update_product(
+        db,
+        product_id,
+        name=product.name,
+        price=product.price
+    )
+
+@router.delete("/{product_id}")
+def delete_product_router(product_id: int, db: Session = Depends(get_db)):
+    return delete_product(db, product_id)
