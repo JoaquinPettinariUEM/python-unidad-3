@@ -75,7 +75,7 @@ uvicorn app.main:app --reload
 
 ## Entrega del proyecto:
 
-[Explicación del código, estructura del proyecto y conclusiones](https://github.com/JoaquinPettinari/python-unidad-3/blob/main/explicación_código.md)
+[Explicación del código, estructura del proyecto y conclusiones](https://github.com/JoaquinPettinariUEM/python-unidad-3/blob/main/explicación_código.md)
 
 
 
